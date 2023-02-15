@@ -47,6 +47,15 @@ io.on("connection", async (socket) => {
       });
     }
   );
+  socket.on(
+    SOCKET_RECEIVE_EVENTS.NEW_ICE_CANDIDATES,
+    ({ peerId, iceCandidates }) => {
+      io.to(peerId).emit(SOCKET_SEND_EVENTS.NEW_ICE_CANDIDATES, {
+        peerId: socket.id,
+        iceCandidates,
+      });
+    }
+  );
 });
 
 const SOCKET_SEND_EVENTS = {
@@ -55,9 +64,11 @@ const SOCKET_SEND_EVENTS = {
   REQUEST_OFFER: "REQUEST_OFFER",
   REQUEST_ANSWER: "REQUEST_ANSWER",
   ANSWER_OF_OFFER: "ANSWER_OF_OFFER",
+  NEW_ICE_CANDIDATES: "NEW_ICE_CANDIDATES",
 };
 
 const SOCKET_RECEIVE_EVENTS = {
   WEBRTC_OFFER: "WEBRTC_OFFER",
   WEBRTC_ANSWER: "WEBRTC_ANSWER",
+  NEW_ICE_CANDIDATES: "NEW_ICE_CANDIDATES",
 };
