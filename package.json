@@ -1,0 +1,15 @@
+{
+  "name": "webrtc-signalling-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "type": "module",
+  "repository": "https://github.com/prashant-DS/webrtc-signalling-server.git",
+  "license": "MIT",
+  "dependencies": {
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.6.0"
+  }
+}
