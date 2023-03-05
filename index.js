@@ -14,17 +14,22 @@ httpServer.listen(8080, () => {
 
 io.on("connection", async (socket) => {
   const token = socket.handshake.auth.token;
+  console.log("connection request from ", socket.id, " with token = ", token);
   if (!token) {
+    console.log("No token received, Disconnecting ", socket.id);
     socket.emit(SOCKET_SEND_EVENTS.INVALID_TOKEN);
     socket.disconnect(true);
     return;
   }
   socket.token = token;
   socket.join(token);
+  console.log(socket.id, " : joined room ", token);
   const clientsInRoom = await io.in(token).fetchSockets();
   if (clientsInRoom.length === 1) {
+    console.log(socket.id, " : Single socket in room ", token);
     socket.emit(SOCKET_SEND_EVENTS.EMPTY_ROOM);
   } else {
+    console.log(socket.id, " : multiple socket in room ", token);
     socket.emit(SOCKET_SEND_EVENTS.REQUEST_OFFER, {
       existingClients: clientsInRoom
         .map((s) => s.id)
@@ -33,6 +38,13 @@ io.on("connection", async (socket) => {
   }
 
   socket.on(SOCKET_RECEIVE_EVENTS.WEBRTC_OFFER, ({ remoteClient, offer }) => {
+    console.log(
+      socket.id,
+      " in room ",
+      socket.token,
+      " : Received offer for ",
+      remoteClient
+    );
     io.to(remoteClient).emit(SOCKET_SEND_EVENTS.REQUEST_ANSWER, {
       initiatingClient: socket.id,
       offer,
@@ -41,6 +53,13 @@ io.on("connection", async (socket) => {
   socket.on(
     SOCKET_RECEIVE_EVENTS.WEBRTC_ANSWER,
     ({ initiatingClient, answer }) => {
+      console.log(
+        socket.id,
+        " in room ",
+        socket.token,
+        " : Received answer for ",
+        initiatingClient
+      );
       io.to(initiatingClient).emit(SOCKET_SEND_EVENTS.ANSWER_OF_OFFER, {
         remoteClient: socket.id,
         answer,
@@ -50,6 +69,13 @@ io.on("connection", async (socket) => {
   socket.on(
     SOCKET_RECEIVE_EVENTS.NEW_ICE_CANDIDATES,
     ({ peerId, iceCandidates }) => {
+      console.log(
+        socket.id,
+        " in room ",
+        socket.token,
+        " : Received new ice candidates for ",
+        peerId
+      );
       io.to(peerId).emit(SOCKET_SEND_EVENTS.NEW_ICE_CANDIDATES, {
         peerId: socket.id,
         iceCandidates,
